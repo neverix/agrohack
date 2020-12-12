@@ -1,5 +1,5 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import VGG16, ResNet50V2, ResNet101V2, Xception, InceptionResNetV2
+from tensorflow.keras.applications import ResNet50V2, ResNet101V2, Xception, NASNetMobile
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dropout, Flatten, Dense, MaxPooling2D
@@ -27,7 +27,7 @@ def add_noise(img):
 
 
 variability = 5
-variability_random = 10
+variability_random = 5
 batch_size = 16
 n_epochs = 25
 lr = 1e-3
@@ -35,13 +35,13 @@ datagen = ImageDataGenerator(
     rescale=1. / 255,
     shear_range=0.1,
     zoom_range=0.1,
-    width_shift_range=0.05,
-    height_shift_range=0.05,
+    horizontal_flip=True,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
     rotation_range=5,
     validation_split=0.1,
-    # fill_mode="mirror",
-preprocessing_function=add_noise)
-img_shape = (331, 331)
+    fill_mode="mirror",
+    preprocessing_function=add_noise)
 last_layers = 7
 
 
@@ -91,7 +91,7 @@ def make_net(base):
 
 
 if __name__ == '__main__':
-    for Base in [ResNet50V2, ResNet101V2, Xception]:
+    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))]:
         model = make_net(Base)
         model.compile(loss="binary_crossentropy",
                       optimizer="adam",

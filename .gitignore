@@ -6,3 +6,4 @@ train_public/
 *.pkl
 *.json
 .empty/
+plots/
