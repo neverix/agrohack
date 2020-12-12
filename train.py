@@ -1,9 +1,9 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import NASNetMobile as Base
+from tensorflow.keras.applications import VGG16, ResNet50V2, ResNet101V2, Xception, InceptionResNetV2
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dropout, Flatten, Dense, MaxPooling2D
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import random
 import numpy as np
 from scipy import ndimage
@@ -12,6 +12,7 @@ from tensorflow import random as random_
 seed_ = 1337
 seed(seed_)
 random_.set_seed(seed_)
+import pickle
 
 
 def add_noise(img):
@@ -26,7 +27,7 @@ def add_noise(img):
 
 
 variability = 5
-variability_random = 15
+variability_random = 10
 batch_size = 16
 n_epochs = 25
 lr = 1e-3
@@ -39,8 +40,9 @@ datagen = ImageDataGenerator(
     rotation_range=5,
     validation_split=0.1,
     # fill_mode="mirror",
-)#preprocessing_function=add_noise)
-img_shape = (224, 224)
+preprocessing_function=add_noise)
+img_shape = (331, 331)
+last_layers = 7
 
 
 import tensorflow as tf
@@ -74,12 +76,12 @@ def soft_f1(y, y_hat):
     return macro_cost
 
 
-def make_net():
-    base = Base(input_shape=img_shape + (3,), include_top=False, weights="imagenet")
-    for layer in base.layers[:-11]:
+def make_net(base):
+    base = base(input_shape=img_shape + (3,), include_top=False, weights="imagenet")
+    for layer in base.layers[:-last_layers]:
         layer.trainable = False
     head = base.output
-    head = MaxPooling2D(pool_size=(7, 7))(head)
+    # head = MaxPooling2D(pool_size=(7, 7))(head)
     head = Flatten()(head)
     head = Dense(64, activation='relu')(head)
     head = Dropout(0.5)(head)
@@ -89,32 +91,35 @@ def make_net():
 
 
 if __name__ == '__main__':
-    model = make_net()
-    model.compile(loss="binary_crossentropy",
-                  optimizer="adam",
-                  metrics=['accuracy', f1])
-    #K.set_value(model.optimizer.learning_rate, lr)
+    for Base in [ResNet50V2, ResNet101V2, Xception]:
+        model = make_net(Base)
+        model.compile(loss="binary_crossentropy",
+                      optimizer="adam",
+                      metrics=['accuracy', f1])
+        #K.set_value(model.optimizer.learning_rate, lr)
 
-    train_generator = datagen.flow_from_directory(
-        'dataset',  # this is the target directory
-        target_size=img_shape,  # all images will be resized to 150x150
-        batch_size=batch_size,
-        class_mode="binary",
-        subset="training")  # since we use binary_crossentropy loss, we need binary labels
+        train_generator = datagen.flow_from_directory(
+            'dataset',  # this is the target directory
+            target_size=img_shape,  # all images will be resized to 150x150
+            batch_size=batch_size,
+            class_mode="binary",
+            subset="training")  # since we use binary_crossentropy loss, we need binary labels
 
-    val_generator = datagen.flow_from_directory(
-        'dataset',  # this is the target directory
-        target_size=img_shape,  # all images will be resized to 150x150
-        batch_size=batch_size,
-        class_mode='binary',
-        subset="validation")  # since we use binary_crossentropy loss, we need binary labels
+        val_generator = datagen.flow_from_directory(
+            'dataset',  # this is the target directory
+            target_size=img_shape,  # all images will be resized to 150x150
+            batch_size=batch_size,
+            class_mode='binary',
+            subset="validation")  # since we use binary_crossentropy loss, we need binary labels
 
-    es = EarlyStopping(monitor="val_f1", mode='max', patience=5)
-    model.fit(
-        train_generator,
-        steps_per_epoch=train_generator.samples // batch_size,
-        epochs=n_epochs,
-        validation_data=val_generator,
-        validation_steps=val_generator.samples // batch_size,
-        callbacks=[es])
-    model.save('model.h5')  # always save your weights after training or during training
+        es = EarlyStopping(monitor="val_f1", mode='max', patience=5, restore_best_weights=True)
+        mcp = ModelCheckpoint(f'models/model-{Base.__name__}-' '{epoch:03d}.h5', monitor='val_f1', mode='max')
+        history = model.fit(
+            train_generator,
+            steps_per_epoch=train_generator.samples // batch_size,
+            epochs=n_epochs,
+            validation_data=val_generator,
+            validation_steps=val_generator.samples // batch_size,
+            callbacks=[es, mcp])
+        model.save(f'model-{Base.__name__}.h5')  # always save your weights after training or during training
+        pickle.dump(history.history, open(f"history-{Base.__name__}.pkl", 'wb'))

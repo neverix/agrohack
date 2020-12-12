@@ -1,5 +1,8 @@
 dataset/
 train_public/
 *.h5
-train_public.csv
+*.csv
 .idea/
+*.pkl
+*.json
+.empty/
