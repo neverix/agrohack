@@ -25,10 +25,10 @@ def add_noise(img):
     return img
 
 
-variability = 2
-variability_random = 5
+variability = 5
+variability_random = 15
 batch_size = 16
-n_epochs = 5
+n_epochs = 25
 lr = 1e-3
 datagen = ImageDataGenerator(
     rescale=1. / 255,
@@ -74,7 +74,7 @@ def soft_f1(y, y_hat):
     return macro_cost
 
 
-if __name__ == '__main__':
+def make_net():
     base = Base(input_shape=img_shape + (3,), include_top=False, weights="imagenet")
     for layer in base.layers[:-11]:
         layer.trainable = False
@@ -85,6 +85,11 @@ if __name__ == '__main__':
     head = Dropout(0.5)(head)
     head = Dense(1, activation='sigmoid')(head)
     model = Model(inputs=base.input, outputs=head)
+    return model
+
+
+if __name__ == '__main__':
+    model = make_net()
     model.compile(loss="binary_crossentropy",
                   optimizer="adam",
                   metrics=['accuracy', f1])
@@ -112,4 +117,4 @@ if __name__ == '__main__':
         validation_data=val_generator,
         validation_steps=val_generator.samples // batch_size,
         callbacks=[es])
-    model.save_weights('first_try.h5')  # always save your weights after training or during training
+    model.save('model.h5')  # always save your weights after training or during training
