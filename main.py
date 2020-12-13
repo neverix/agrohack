@@ -6,8 +6,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 data_path = "./train_public/"
-model_name = "model-Xception.h5"
-threshold = 0.1
+model_name = "model-Xception-new.h5"
+threshold = 0.3
 out_file = "OBP_result.csv"
 
 # необходимо добавить, чтобы программа работала на локальном компьютере
