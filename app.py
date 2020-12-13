@@ -7,6 +7,7 @@ import numpy as np
 import os
 from lime import lime_image
 from matplotlib import pyplot as plt
+from skimage.segmentation import mark_boundaries
 
 
 all_models = ["NASNetMobile", "ResNet50V2", "ResNet101V2", "Xception"]
@@ -68,8 +69,8 @@ if __name__ == '__main__':
                 heatmap = np.vectorize(dict_heatmap.get)(exp.segments)
                 fig, ax = plt.subplots()
                 ax.imshow(heatmap, cmap='RdBu', vmin=-heatmap.max(), vmax=heatmap.max())
-                st.pyplot(fig, width=300)
-                print(exp)
+                ax.axis('off')
+                st.pyplot(fig)
 
     else:
         st.write("Пожалуйста, загрузите изображение.")
