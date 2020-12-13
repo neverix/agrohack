@@ -6,8 +6,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 data_path = "./train_public/"
-model_name = "model-NASNetMobile.h5"
-threshold = 0.4
+model_name = "model-Xception.h5"
+threshold = 0.1
 
 # необходимо добавить, чтобы программа работала на локальном компьютере
 gpus = tf.config.experimental.list_physical_devices('GPU')

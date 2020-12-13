@@ -7,3 +7,4 @@ train_public/
 *.json
 .empty/
 plots/
+venv/

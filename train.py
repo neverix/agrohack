@@ -91,7 +91,7 @@ def make_net(base):
 
 
 if __name__ == '__main__':
-    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))][3:]:
+    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))][4:]:
         model = make_net(Base)
         model.compile(loss="binary_crossentropy",
                       optimizer="adam",
