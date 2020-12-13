@@ -8,6 +8,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 data_path = "./train_public/"
 model_name = "model-Xception.h5"
 threshold = 0.1
+out_file = "OBP_result.csv"
 
 # необходимо добавить, чтобы программа работала на локальном компьютере
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -30,4 +31,4 @@ predict = model.predict(test_generator, batch_size=1, verbose=True)
 xy = zip(filenames, [int(x[0] > threshold) for x in predict])
 
 df = pd.DataFrame(xy, columns=["name", "disease_flag"])
-df.to_csv("OBP_result.csv")
+df.to_csv(out_file  )

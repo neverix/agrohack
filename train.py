@@ -40,8 +40,8 @@ datagen = ImageDataGenerator(
     height_shift_range=0.05,
     rotation_range=5,
     validation_split=0.1,
-    fill_mode="mirror",
-    preprocessing_function=add_noise)
+)#    fill_mode="mirror",
+#    preprocessing_function=add_noise)
 last_layers = 7
 
 
@@ -91,7 +91,7 @@ def make_net(base):
 
 
 if __name__ == '__main__':
-    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))][4:]:
+    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))][:1]:
         model = make_net(Base)
         model.compile(loss="binary_crossentropy",
                       optimizer="adam",
@@ -112,7 +112,7 @@ if __name__ == '__main__':
             class_mode='binary',
             subset="validation")  # since we use binary_crossentropy loss, we need binary labels
 
-        es = EarlyStopping(monitor="val_f1", mode='max', patience=10)
+        es = EarlyStopping(monitor="val_f1", mode='max', patience=10, restore_best_weights=True)
         mcp = ModelCheckpoint(f'models/model-{Base.__name__}-' '{epoch:03d}.h5', monitor='val_f1', mode='max')
         history = model.fit(
             train_generator,
