@@ -27,7 +27,7 @@ def add_noise(img):
 
 
 variability = 5
-variability_random = 5
+variability_random = 2
 batch_size = 16
 n_epochs = 25
 lr = 1e-3
@@ -36,8 +36,8 @@ datagen = ImageDataGenerator(
     shear_range=0.1,
     zoom_range=0.1,
     horizontal_flip=True,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
+    width_shift_range=0.05,
+    height_shift_range=0.05,
     rotation_range=5,
     validation_split=0.1,
     fill_mode="mirror",
@@ -91,7 +91,7 @@ def make_net(base):
 
 
 if __name__ == '__main__':
-    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))]:
+    for Base, img_shape in [(NASNetMobile, (224, 224)), (ResNet50V2, (331, 331)), (ResNet101V2, (331, 331)), (Xception, (331, 331))][3:]:
         model = make_net(Base)
         model.compile(loss="binary_crossentropy",
                       optimizer="adam",
@@ -112,7 +112,7 @@ if __name__ == '__main__':
             class_mode='binary',
             subset="validation")  # since we use binary_crossentropy loss, we need binary labels
 
-        es = EarlyStopping(monitor="val_f1", mode='max', patience=5, restore_best_weights=True)
+        es = EarlyStopping(monitor="val_f1", mode='max', patience=10)
         mcp = ModelCheckpoint(f'models/model-{Base.__name__}-' '{epoch:03d}.h5', monitor='val_f1', mode='max')
         history = model.fit(
             train_generator,

@@ -4,6 +4,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from PIL import Image
 import numpy as np
+import os
 
 
 all_models = ["NASNetMobile", "ResNet50V2", "ResNet101V2", "Xception"]
@@ -12,9 +13,7 @@ target_sizes = dict(zip(all_models, [(x, x) for x in [224, 331, 331, 331]]))
 
 @st.cache(allow_output_mutation=True)
 def get_model(model_name):
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    for gpu in gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     return load_model(f"model-{model_name}.h5", custom_objects={'f1': None})
 
 
@@ -40,7 +39,10 @@ if __name__ == '__main__':
             tgt_size = target_sizes[model_name]
             img = img.resize(tgt_size, Image.ANTIALIAS)
             img_array = image.img_to_array(img)
-            print(img_array.shape)
             prediction = float(model.predict(np.array([img_array]))[0][0])
             st.subheader(f"Предсказание: {['не заражен', 'заражен'][int(round(prediction))]}")
+            conf = max(prediction, 1-prediction)
+            st.write(f"Уверенность: {conf*100:.2f}%")
+    else:
+        st.write("Пожалуйста, загрузите изображение.")
 

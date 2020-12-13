@@ -6,8 +6,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 data_path = "./train_public/"
-model_name = "model-Xception.h5"
-threshold = 0.2
+model_name = "model-NASNetMobile.h5"
+threshold = 0.4
 
 # необходимо добавить, чтобы программа работала на локальном компьютере
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -26,7 +26,7 @@ test_generator = datagen.flow_from_directory(
 filenames = test_generator.filenames
 
 model = load_model(model_name, custom_objects={"f1": None})
-predict = model.predict(test_generator, verbose=True)
+predict = model.predict(test_generator, batch_size=1, verbose=True)
 xy = zip(filenames, [int(x[0] > threshold) for x in predict])
 
 df = pd.DataFrame(xy, columns=["name", "disease_flag"])
