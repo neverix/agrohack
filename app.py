@@ -9,26 +9,26 @@ import os
 
 all_models = ["NASNetMobile", "ResNet50V2", "ResNet101V2", "Xception"]
 target_sizes = dict(zip(all_models, [(x, x) for x in [224, 331, 331, 331]]))
-drive_link = "https://drive.google.com/uc?id=1bSV3ljfYMFgoY4dxOPnKntIU9lq5S1ey"
+drive_link = "https://drive.google.com/uc?id=1ClDquQj9mTRObaEOwNZCeb47gsFjJK3i"
 
 
 @st.cache
 def download_models():
-    gdown.cached_download("https://drive.google.com/uc?id=1bSV3ljfYMFgoY4dxOPnKntIU9lq5S1ey", "model-Xception.h5", quiet=False)
+    gdown.cached_download(drive_link, "/tmp/model-NASNetMobile.h5", quiet=False)
 
 
 @st.cache(allow_output_mutation=True)
 def get_model(model_name):
     download_models()
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-    return load_model(f"model-{model_name}.h5", custom_objects={'f1': None})
+    return load_model(f"/tmp/model-{model_name}.h5", custom_objects={'f1': None})
 
 
 if __name__ == '__main__':
     st.header("Нейросеть для обнаружения заболеваний листьев яблони по фотографии")
 
     st.sidebar.subheader("Выбор модели")
-    model_name = st.sidebar.selectbox("Модель", all_models, index=3)
+    model_name = st.sidebar.selectbox("Модель", all_models, index=0)
 
     if model_name:
         model = get_model(model_name)
